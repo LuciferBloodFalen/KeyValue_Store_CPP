@@ -4,3 +4,4 @@ data/*.log
 *.o
 .DS_Store
 main.py
+test.cpp
