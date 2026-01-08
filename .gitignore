@@ -1,0 +1,6 @@
+build/
+data/*.db
+data/*.log
+*.o
+.DS_Store
+main.py
