@@ -7,11 +7,15 @@ class KeyValueStore
 {
 private:
     std::unordered_map<std::string, std::string> store;
+    std::string filename;
 
 public:
-    bool set(const std::string& key, const std::string& value);
+    explicit KeyValueStore(const std::string &file);
 
-    std::string get(const std::string& key) const;
+    bool set(const std::string &key, const std::string &value);
+    std::string get(const std::string &key) const;
+    bool del(const std::string &key);
 
-    bool del(const std::string& key);
+    bool saveToFile() const;
+    bool loadFromFile();
 };
