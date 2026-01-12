@@ -9,42 +9,38 @@ bool SnapshotManager::save() const
     if (!out.is_open())
         return false;
 
-    // Iterate the unordered_map store in Class KeyValueStore that is being referenced as private kv in this class
-        // for (const auto &pair : kv)
-    // for (const auto *it = kv.begin(); it!=kv.end())
-    // {
-    //     out << pair.first << "=" << pair.second << "\n";
-    // }
+    for (auto it = kv.begin(); it != kv.end(); ++it)
+    {
+        out << it->first << "=" << it->second << "\n";
+    }
 
     return true;
 }
 
 bool SnapshotManager::load()
 {
-    /*
-    std::ifstream in(filename);
-//     if (!in.is_open())
-//         return false;
+    std::ifstream in(filepath);
+    if (!in.is_open())
+        return true;
 
-//     store.clear();
+    kv.clear();
 
-//     std::string line;
-//     while (std::getline(in, line))
-//     {
-//         if (line.empty())
-//             continue;
+    std::string line;
+    while (std::getline(in, line))
+    {
+        if (line.empty())
+            continue;
 
-//         auto pos = line.find(":");
-//         if (pos == std::string::npos)
-//             continue;
+        auto pos = line.find("=");
+        if (pos == std::string::npos)
+            continue;
 
-//         std::string key = line.substr(0, pos);
-//         std::string value = line.substr(pos + 1);
+        std::string key = line.substr(0, pos);
+        std::string value = line.substr(pos + 1);
 
-//         if (!key.empty())
-//             store[key] = value;
-//     }
+        if (!key.empty())
+            kv.set(key, value);
+    }
 
-//     return true;
-*/
+    return true;
 }

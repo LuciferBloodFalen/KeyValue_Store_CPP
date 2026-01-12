@@ -38,3 +38,18 @@ size_t KeyValueStore::size() const
 {
     return store.size();
 }
+
+std::unordered_map<std::string, std::string>::const_iterator KeyValueStore::begin() const
+{
+    return store.begin();
+}
+
+std::unordered_map<std::string, std::string>::const_iterator KeyValueStore::end() const
+{
+    return store.end();
+}
+
+void KeyValueStore::clear()
+{
+    store.clear();
+}
