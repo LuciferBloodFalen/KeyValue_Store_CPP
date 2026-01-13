@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <iostream>
 
 WALManager::WALManager(std::string &filename)
     : logfile(filename)
@@ -19,7 +20,7 @@ void WALManager::logSet(const std::string &key, const std::string &value)
     out.close();
 }
 
-void WALManager::logdel(const std::string &key)
+void WALManager::logDel(const std::string &key)
 {
     std::ofstream out(logfile, std::ios::app);
     if (!out.is_open())
@@ -30,7 +31,7 @@ void WALManager::logdel(const std::string &key)
     out.close();
 }
 
-void WALManager::replay(KeyValueStore &ks)
+void WALManager::replay(KeyValueStore &kv)
 {
     std::ifstream in(logfile);
     if (!in.is_open())
@@ -43,23 +44,31 @@ void WALManager::replay(KeyValueStore &ks)
         std::string cmd;
         ss >> cmd;
 
-        if(cmd == "SET")
+        if (cmd == "SET")
         {
             std::string key;
             ss >> key;
 
             std::string value;
             std::getline(ss, value);
+
+            while (!value.empty() && value[0] == ' ')
+                value.erase(0, 1);
+
+            kv.setInternal(key, value);
         }
-        else if(cmd == "DEL")
+        else if (cmd == "DEL")
         {
-            // 
+            std::string key;
+            ss >> key;
+
+            kv.delInternal(key);
         }
     }
-    
 }
 
 void WALManager::clear()
 {
-    //
+    std::ofstream out(logfile, std::ios::trunc);
+    out.close();
 }

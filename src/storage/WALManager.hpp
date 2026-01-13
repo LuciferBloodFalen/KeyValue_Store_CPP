@@ -13,8 +13,8 @@ public:
     explicit WALManager(std::string &filename);
 
     void logSet(const std::string &key, const std::string &value);
-    void logdel(const std::string &key);
+    void logDel(const std::string &key);
 
-    void replay(KeyValueStore &ks);
+    void replay(KeyValueStore &kv);
     void clear();
 };

@@ -21,7 +21,7 @@ CommandParser::CommandParser(KeyValueStore &store)
 
 void CommandParser::run()
 {
-    kv.loadFromFile();
+    kv.load();
 
     std::string line;
     std::cout << "KeyValueStore started. Type EXIT to quit.\n";

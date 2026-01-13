@@ -1,12 +1,12 @@
 #include "KeyValueStore.hpp"
-cw
-bool KeyValueStore::set(const std::string &key, const std::string &value)
-{
-    if (key.empty())
-        return false;
 
+KeyValueStore::KeyValueStore(WALManager &wal)
+    : wal(wal) {}
+
+void KeyValueStore::set(const std::string &key, const std::string &value)
+{
+    wal.logSet(key, value);
     store[key] = value;
-    return true;
 }
 
 std::string KeyValueStore::get(const std::string &key) const
@@ -21,12 +21,20 @@ std::string KeyValueStore::get(const std::string &key) const
     return it->second;
 }
 
-bool KeyValueStore::del(const std::string &key)
+void KeyValueStore::del(const std::string &key)
 {
-    if (key.empty())
-        return false;
+    wal.logDel(key);
+    store.erase(key);
+}
 
-    return store.erase(key) > 0;
+void KeyValueStore::setInternal(const std::string &key, const std::string &value)
+{
+    store[key] = value;
+}
+
+void KeyValueStore::delInternal(const std::string &key)
+{
+    store.erase(key);
 }
 
 bool KeyValueStore::exists(const std::string &key) const
