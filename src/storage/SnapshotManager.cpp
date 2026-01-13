@@ -3,7 +3,20 @@
 #include <fstream>
 #include <sstream>
 
-bool SnapshotManager::save() const
+SnapshotManager::SnapshotManager(const std::string &path, KeyValueStore &kv, size_t threshold)
+    : filepath(path), kv(kv), snapshotThreshold(threshold) {}
+
+void SnapshotManager::onWrite()
+{
+    ++writeCount;
+}
+
+bool SnapshotManager::shouldSnapshot() const
+{
+    return writeCount >= snapshotThreshold;
+}
+
+bool SnapshotManager::save()
 {
     std::ofstream out(filepath);
     if (!out.is_open())
@@ -14,6 +27,7 @@ bool SnapshotManager::save() const
         out << it->first << "=" << it->second << "\n";
     }
 
+    writeCount = 0;
     return true;
 }
 

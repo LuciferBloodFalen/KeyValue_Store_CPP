@@ -14,14 +14,13 @@ std::string CommandParser::toUpper(const std::string &s)
     return s;
 }
 
-CommandParser::CommandParser(KeyValueStore &store)
-    : kv(store)
+CommandParser::CommandParser(KeyValueStore &kv, SnapshotManager &snapshot, WALManager &wal)
+    : kv(kv), snapshot(snapshot), wal(wal)
 {
 }
 
 void CommandParser::run()
 {
-    kv.load();
 
     std::string line;
     std::cout << "KeyValueStore started. Type EXIT to quit.\n";
@@ -56,45 +55,85 @@ void CommandParser::run()
                 value.erase(0, 1);
             }
 
-            if (!kv.set(key, value))
+            if (key.empty() || value.empty())
             {
-                std::cout << "ERROR\n";
+                std::cout << "Usage: SET key value\n";
+                continue;
             }
-            else
-            {
-                std::cout << "OK\n";
-            }
+
+            handleSet(key, value);
         }
         else if (command == "GET")
         {
             std::string key;
             ss >> key;
 
-            std::cout << kv.get(key) << '\n';
+            if (key.empty())
+            {
+                std::cout << "Usage: GET key\n";
+                continue;
+            }
+
+            handleGet(key);
         }
         else if (command == "DEL")
         {
             std::string key;
             ss >> key;
 
-            if (kv.del(key))
+            if (key.empty())
             {
-                std::cout << "OK\n";
+                std::cout << "Usage: DEL key\n";
+                continue;
             }
-            else
-            {
-                std::cout << "NULL\n";
-            }
+
+            handleDel(key);
         }
         else if (command == "EXIT")
         {
-            kv.saveToFile();
+            snapshot.save();
+            wal.clear();
             std::cout << "Bye\n";
             break;
         }
-        else
+        else if (!command.empty())
         {
             std::cout << "Unknown Command\n";
         }
+    }
+}
+
+void CommandParser::handleSet(const std::string &key, const std::string &value)
+{
+    wal.logSet(key, value);
+    kv.setInternal(key, value);
+    snapshot.onWrite();
+
+    if(snapshot.shouldSnapshot())
+    {
+        snapshot.save();
+        wal.clear();
+    }
+}
+
+void CommandParser::handleGet(const std::string &key)
+{
+    std::string value = kv.get(key);
+    if (!value.empty())
+        std::cout << value << "\n";
+    else
+        std::cout << "(nil)\n";
+}
+
+void CommandParser::handleDel(const std::string &key)
+{
+    wal.logDel(key);
+    kv.delInternal(key);
+    snapshot.onWrite();
+
+    if(snapshot.shouldSnapshot())
+    {
+        snapshot.save();
+        wal.clear();
     }
 }
